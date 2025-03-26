@@ -26,7 +26,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { toast } from "sonner";
+import { toast, Toaster } from "sonner";
+import { getApiUrl, ENDPOINTS } from "@/utils/api-config";
 
 interface City {
   id: number;
@@ -45,6 +46,12 @@ const LocationsManagement: React.FC = () => {
   const [cities, setCities] = useState<City[]>([]);
   const [selectedCities, setSelectedCities] = useState<RegionCityMap>({});
   const [loading, setLoading] = useState(false);
+  const [initialLoadDone, setInitialLoadDone] = useState(false);
+
+  // Fetch existing mappings on component mount
+  useEffect(() => {
+    fetchExistingMappings();
+  }, []);
 
   // Fetch countries on component mount
   useEffect(() => {
@@ -57,31 +64,79 @@ const LocationsManagement: React.FC = () => {
       fetchCities();
     } else {
       setCities([]);
-      setSelectedCities({});
     }
   }, [selectedCountries]);
 
+  const fetchExistingMappings = async () => {
+    try {
+      const response = await fetch(getApiUrl(ENDPOINTS.LOCATIONS.MAPPINGS));
+      const data = await response.json();
+      
+      if (data.status === 'error') {
+        throw new Error(data.message);
+      }
+      
+      // Set the selected countries from existing mappings
+      const regions = Object.keys(data.data.regionMappings);
+      setSelectedCountries(regions);
+      
+      // Set the selected cities from existing mappings
+      setSelectedCities(data.data.regionMappings);
+      
+      setInitialLoadDone(true);
+      if (regions.length > 0) {
+        toast.success('Existing mappings loaded successfully', {
+          description: `Found ${regions.length} region(s) with mapped cities`
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching existing mappings:', error);
+      toast.error('Failed to load mappings', {
+        description: error instanceof Error ? error.message : 'Could not load existing mappings'
+      });
+      setInitialLoadDone(true);
+    }
+  };
+
   const fetchCountries = async () => {
     try {
-      const response = await fetch('http://localhost:3001/api/locations/countries');
-      if (!response.ok) throw new Error('Failed to fetch countries');
+      const response = await fetch(getApiUrl(ENDPOINTS.LOCATIONS.COUNTRIES));
       const data = await response.json();
-      setCountries(data);
+      
+      if (data.status === 'error') {
+        throw new Error(data.message);
+      }
+      
+      setCountries(data.data);
+      toast.success('Countries loaded', {
+        description: `Successfully loaded ${data.data.length} countries`
+      });
     } catch (error) {
       console.error('Error fetching countries:', error);
-      toast.error('Failed to fetch countries');
+      toast.error('Failed to load countries', {
+        description: error instanceof Error ? error.message : 'Could not load country list'
+      });
     }
   };
 
   const fetchCities = async () => {
     try {
-      const response = await fetch(`http://localhost:3001/api/locations/cities?countries=${selectedCountries.join(',')}`);
-      if (!response.ok) throw new Error('Failed to fetch cities');
+      const response = await fetch(getApiUrl(`${ENDPOINTS.LOCATIONS.CITIES}?countries=${selectedCountries.join(',')}`));
       const data = await response.json();
-      setCities(data);
+      
+      if (data.status === 'error') {
+        throw new Error(data.message);
+      }
+      
+      setCities(data.data);
+      toast.success('Cities loaded', {
+        description: `Successfully loaded ${data.data.length} cities for ${selectedCountries.length} region(s)`
+      });
     } catch (error) {
       console.error('Error fetching cities:', error);
-      toast.error('Failed to fetch cities');
+      toast.error('Failed to load cities', {
+        description: error instanceof Error ? error.message : 'Could not load cities for selected regions'
+      });
     }
   };
 
@@ -90,7 +145,7 @@ const LocationsManagement: React.FC = () => {
       setSelectedCountries([...selectedCountries, country]);
       setSelectedCities(prev => ({
         ...prev,
-        [country]: []
+        [country]: prev[country] || []
       }));
     }
     setOpen(false);
@@ -121,6 +176,8 @@ const LocationsManagement: React.FC = () => {
       // Remove region if no cities are selected
       if (newSelected[region].length === 0) {
         delete newSelected[region];
+        // Also remove the country from selectedCountries
+        setSelectedCountries(countries => countries.filter(c => c !== region));
       }
 
       return newSelected;
@@ -129,13 +186,15 @@ const LocationsManagement: React.FC = () => {
 
   const handleSaveMapping = async () => {
     if (Object.keys(selectedCities).length === 0) {
-      toast.error('Please select at least one city');
+      toast.warning('No cities selected', {
+        description: 'Please select at least one city to save the mapping'
+      });
       return;
     }
 
     setLoading(true);
     try {
-      const response = await fetch('http://localhost:3001/api/locations/mapping', {
+      const response = await fetch(getApiUrl(ENDPOINTS.LOCATIONS.MAPPING), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -145,28 +204,53 @@ const LocationsManagement: React.FC = () => {
         }),
       });
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to save mapping');
+      const data = await response.json();
+      
+      if (data.status === 'error') {
+        throw new Error(data.message);
       }
       
-      const data = await response.json();
-      toast.success('Successfully saved city mapping');
+      toast.success('Mappings saved', {
+        description: data.message
+      });
       
-      // Reset selections after successful save
-      setSelectedCountries([]);
-      setSelectedCities({});
-      setCities([]);
+      // Refresh the mappings
+      await fetchExistingMappings();
+
+      // Refresh the cities list for the currently selected countries
+      if (selectedCountries.length > 0) {
+        await fetchCities();
+      }
     } catch (error) {
-      console.error('Error saving mapping:', error);
-      toast.error(error instanceof Error ? error.message : 'Failed to save city mapping');
+      console.error('Error updating mapping:', error);
+      toast.error('Failed to save mappings', {
+        description: error instanceof Error ? error.message : 'Could not update location mappings'
+      });
     } finally {
       setLoading(false);
     }
   };
 
+  if (!initialLoadDone) {
+    return (
+      <div className="space-y-6" style={{ paddingTop: '25px' }}>
+        <Toaster position="top-right" richColors />
+        <PageTitle 
+          title="Locations Management" 
+          description="Manage countries and cities for your network" 
+        />
+        <Card>
+          <CardContent className="flex items-center justify-center h-40">
+            Loading existing mappings...
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6" style={{ paddingTop: '25px' }}>
+      <Toaster position="top-right" richColors />
       <PageTitle 
         title="Locations Management" 
         description="Manage countries and cities for your network" 
