@@ -1,0 +1,20 @@
+/* Custom styles for the PlacesToStay page */
+
+.sidebarWrapper {
+  width: 100%;
+}
+
+/* Override the sidebar width for this page only */
+.sidebarWrapper :global(.lg\:w-1\/4) {
+  width: 100% !important;
+}
+
+/* Ensure the sidebar content takes full width */
+.sidebarWrapper :global(.space-y-8) {
+  width: 100%;
+}
+
+/* Ensure cards in the sidebar take full width */
+.sidebarWrapper :global(.card) {
+  width: 100%;
+} 
