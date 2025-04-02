@@ -11,6 +11,7 @@
     "@supabase/supabase-js": "latest",
     "cors": "^2.8.5",
     "express": "^4.18.2",
+    "lucide-react": "^0.487.0",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
@@ -18,6 +19,8 @@
     "sonner": "latest"
   },
   "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "tailwindcss": "^4.1.0",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node": "latest",
