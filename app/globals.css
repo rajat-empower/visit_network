@@ -1,3 +1,4 @@
+/* Import Tailwind's base styles */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -57,9 +58,7 @@
 
 .pt-16 {
   padding-top: 0rem;
-  padding-left: 0rem;
 }
-
 
 .text-lg {
   font-size: 1rem;
@@ -78,6 +77,7 @@ button, input, optgroup, select, textarea {
   margin: 0;
   padding: 0;
 }
+
 .prose p {
   line-height: 1.5 !important;
   font-size: 15px;
@@ -108,7 +108,6 @@ button, input, optgroup, select, textarea {
   color: rgb(30 64 175 / var(--tw-text-opacity, 1));
   font-size: 1rem;
 }
-
 
 .article-content p {
   line-height: 1.5 !important;
@@ -187,7 +186,6 @@ button, input, optgroup, select, textarea {
   overflow: hidden;
 }
 
-
 .article-content ul li:last-child,
 .prose ul li:last-child {
   border-bottom: none !important;
@@ -197,78 +195,52 @@ button, input, optgroup, select, textarea {
   :root {
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
-
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
-
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
-
     --primary: 222.2 47.4% 11.2%;
     --primary-foreground: 210 40% 98%;
-
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
-
     --muted: 210 40% 96.1%;
     --muted-foreground: 215.4 16.3% 46.9%;
-
     --accent: 210 40% 96.1%;
     --accent-foreground: 222.2 47.4% 11.2%;
-
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
-
     --radius: 0.5rem;
-
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
-    
     --vr--theme--color: #ea384c;
   }
 
   .dark {
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
-
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
-
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
-
     --primary: 210 40% 98%;
     --primary-foreground: 222.2 47.4% 11.2%;
-
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
-
     --muted: 217.2 32.6% 17.5%;
     --muted-foreground: 215 20.2% 65.1%;
-
     --accent: 217.2 32.6% 17.5%;
     --accent-foreground: 210 40% 98%;
-
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
@@ -283,206 +255,7 @@ button, input, optgroup, select, textarea {
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-
-  body {
-    @apply bg-background;
-    font-family: var(--font-lato), 'Lato', sans-serif;
-    font-size: 1rem;
-    line-height: 1.5;
-    color: #333333;
-  }
-
-  h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-lato), 'Lato', sans-serif;
-    font-weight: 700;
-  }
-
-  #root {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 0rem;
-  }
-}
-
-.shadow-sm {
-  flex: 0.5 0.5 auto;
-  min-height: 1px;
-  padding: 30px 0;
- box-shadow: 0px 3px 5px 0px rgba(0, 0, 0, 0.15);
-position: relative;
-z-index: 9;
-  }
-
-
-.py-12 {
-  padding-top: 1rem;
-  padding-bottom: 3rem;
-  border-top-color: black;
-  border-top-style: dotted;
-  border-top-width: 1px;
-}
-.mb-6 {
-  margin-bottom: 0.4rem;
-}
-
-.h2 {
-font-size: 1.8rem;
-    font-weight: 800;
-    border-top: 1px;
-    /* border-top-style: dotted; */
-    margin-top: 6px;
-    padding-top: 20px;
-    margin-bottom: 0em;
- }
-
-.pt-16 {
-  padding-top: 0rem;
-}
-
-.top-10 {
-  top: 0.5rem;
-}
-
-.p-4 {
-  padding: 1.4rem;
-}
-
-img, video {
-  max-width: 100%;
-  height: 350px;
-  }
-  
-.text-6xl {
-    font-size: 3.5rem;
-    line-height: 1.4;
-    font-weight: 900;
-}
-
-.text-xl {
-  font-size: 1.3rem;
-  line-height: 1.4;
-  font-weight: 600;
-}
-
- .entry-content {
-  font-size: 15px;
-  line-height: 1.5;
-}
-
-
-.h3 {
-  font-size: 1.3rem;
-  line-height: 1;
-  font-weight: 500;
-}
-
-.text-3xl {
-    font-size: 1.575rem;
-    line-height: 2.25rem;
-}
-
-.text-gray-600 {
-    --tw-text-opacity: 1;
-    color: rgb(75 85 99 / var(--tw-text-opacity, 1));
-    font-size: 15px;
-}
-
-.text-blue-600 {
-    --tw-text-opacity: 1;
-    color: rgb(37 99 235 / var(--tw-text-opacity, 1));
-    font-size: 1rem;
-}
-
-.mr-2 {
-    margin-right: 0.5rem;
-    font-size: 1rem;
-}
-
-.text-black {
-    --tw-text-opacity: 1;
-    color: rgb(0 0 0 / var(--tw-text-opacity, 1));
-    font-size: 1rem;
-}
-
-.text-white {
-    --tw-text-opacity: 1;
-    color: rgb(255 255 255 / var(--tw-text-opacity, 1));
-    font-size: 0.8rem;
-}
-
-.text-\[\#888888\] {
-    --tw-text-opacity: 1;
-    color: rgb(136 136 136 / var(--tw-text-opacity, 1));
-    font-size: 1rem;
-}
-
-.h6 {
-  font-size: 1.4rem;
-  display: inline-block;
-  white-space: nowrap;
-  margin-bottom: 15px;
-  line-height: 1.2;
-  font-weight: 700;
-  box-shadow: none;
-  border: 0px solid RGBA(0, 0, 0, 1);
-  border-radius: 0px;
-  border-bottom: 3px solid #fff;
-  text-transform: uppercase;
-}
-
-._blog-banner_1md4q_1 h3 {
-  position: absolute;
-  top: 60%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 1.4rem;
-  text-align: center;
-  line-height: 1.2;
-  font-weight: 500;
-  color: #fff;
-  z-index: 1;
-  width: 100%;
-}
-
-/* Custom styling for card shadows */
-.shadow-sm {
-  flex: 0.5 0.5 auto;
-  min-height: 1px;
-  padding: 0.7rem !important;
-  background: linear-gradient(180deg, var(--vr--msg--box--bg, rgba(255, 255, 255, 0.9)) 0%, rgba(255, 255, 255, 1) 100%, rgb(224 192 192) 100%);
-}
-
-/* Ribbon styling */
-.ribbon {
-  position: absolute;
-  top: -30px;
-  left: -30px;
-  width: 250px;
-  height: 250px;
-  overflow: hidden;
-  z-index: 10;
-  pointer-events: none;
-}
-
-.ribbon span {
-  font-size: 10px;
-  font-weight: bold;
-  color: #FFF;
-  text-transform: uppercase;
-  text-align: center;
-  line-height: 20px;
-  transform: rotate(-45deg);
-  -webkit-transform: rotate(-45deg);
-  width: 250px;
-  display: block;
-  background: var(--vr--theme--color, #ea384c);
-  background: linear-gradient(var(--vr--theme--color, #ea384c) 0%, var(--vr--theme--color, #ea384c) 100%);
-  box-shadow: 0 3px 10px -5px rgba(0, 0, 0, 1);
-  position: absolute;
-  top: 65px;
-  left: -50px;
+/* Custom border class if needed */
+.border-border {
+  border: 1px solid #e5e5e5; /* Replace with your desired border style */
 }

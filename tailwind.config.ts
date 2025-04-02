@@ -1,7 +1,24 @@
-import type { Config } from "tailwindcss";
+// tailwind.config.js
+// module.exports = {
+// 	content: [
+// 	  './app/**/*.{ts,tsx,js,jsx,mdx,html}',
+// 	  './components/**/*.{ts,tsx,js,jsx,mdx,html}',
+// 	  './comp-pages/**/*.{ts,tsx,js,jsx,mdx,html}',
+// 	  './lib/**/*.{ts,tsx,js,jsx,mdx,html}',
+// 	  './hooks/**/*.{ts,tsx,js,jsx,mdx,html}',
+// 	  './public/**/*.{html,js}',
+// 	  './pages/**/*.{ts,tsx,js,jsx,mdx,html}',
+// 	  './src/**/*.{ts,tsx,js,jsx,mdx,html}',
+// 	],
+// 	theme: {
+// 	  extend: {},
+// 	},
+// 	plugins: [],
+//   };
+  
 
-export default {
-	darkMode: ["class"],
+
+module.exports = {
 	content: [
 		"./app/**/*.{ts,tsx,js,jsx,mdx,html}",        
 		"./components/**/*.{ts,tsx,js,jsx,mdx,html}",
@@ -114,4 +131,4 @@ export default {
 		}
 	},
 	plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
-} satisfies Config;
+};	  
