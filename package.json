@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "latest",
+    "@tanstack/react-query": "^5.71.1",
     "autoprefixer": "^10.4.21",
     "cors": "^2.8.5",
     "express": "^4.18.2",
@@ -16,6 +17,7 @@
     "next": "latest",
     "react": "latest",
     "react-dom": "latest",
+    "react-hook-form": "^7.55.0"
     "serverless-http": "^3.2.0",
     "sonner": "latest"
   },
