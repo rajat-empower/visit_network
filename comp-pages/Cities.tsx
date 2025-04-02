@@ -9,8 +9,8 @@ import { LayoutGrid, List } from "lucide-react";
 interface City {
   id: string;
   name: string;
-  description: string;
-  image_url: string;
+  description: string | null;
+  image_url: string | null;
   popularity: number | null;
 }
 
@@ -71,7 +71,9 @@ const Cities = () => {
     fetchData();
   }, []);
 
-  const truncateText = (text: string, maxLines: number) => {
+  const truncateText = (text: string | null | undefined, maxLines: number) => {
+    if (!text) return 'No description available';
+    
     const lines = text.split('\n');
     if (lines.length > maxLines) {
       return lines.slice(0, maxLines).join('\n') + '...';
@@ -83,17 +85,14 @@ const Cities = () => {
     <div className="min-h-screen bg-gray-50 pt-16">
       <PageTitle title="Explore Cities" description="Discover the best cities in Slovenia" />
       
-      
-      
       <div className="max-w-7xl mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8 text-[#ea384c]">Explore Cities</h1>
         <div className="prose max-w-none mb-12">
           <p className="text-gray-600 leading-relaxed">
-          Slovenia is a country of contrasts, where historic charm meets modern vibrancy. From the fairytale beauty of Ljubljana, with its castle-topped skyline and lively riverside cafés, to the coastal elegance of Piran, where Venetian influences shine, each city has its own unique story to tell. Whether you're exploring medieval streets, indulging in local cuisine, or uncovering hidden cultural gems, Slovenia's cities promise unforgettable experiences.
-Start your journey by exploring the best that Slovenia has to offer!
+            Slovenia is a country of contrasts, where historic charm meets modern vibrancy. From the fairytale beauty of Ljubljana, with its castle-topped skyline and lively riverside cafés, to the coastal elegance of Piran, where Venetian influences shine, each city has its own unique story to tell. Whether you're exploring medieval streets, indulging in local cuisine, or uncovering hidden cultural gems, Slovenia's cities promise unforgettable experiences.
+            Start your journey by exploring the best that Slovenia has to offer!
           </p>
         </div>
-
 
         <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
           <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
@@ -123,12 +122,12 @@ Start your journey by exploring the best that Slovenia has to offer!
                 <div className="flex justify-center py-4">
                   <div className="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-[#ea384c]"></div>
                 </div>
-              ) : (
+              ) : cities.length > 0 ? (
                 cities.map((city) => (
                   <Card key={city.id} className="overflow-hidden group shadow-sm">
                     <div className="overflow-hidden">
                       <img
-                        src={city.image_url}
+                        src={city.image_url || '/images/placeholder-city.jpg'}
                         alt={city.name}
                         className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-110 group-hover:rotate-1"
                       />
@@ -149,6 +148,10 @@ Start your journey by exploring the best that Slovenia has to offer!
                     </CardContent>
                   </Card>
                 ))
+              ) : (
+                <div className="col-span-3 text-center py-8 text-gray-500">
+                  No cities found. Please try again later.
+                </div>
               )}
             </div>
           </div>
@@ -195,11 +198,6 @@ Start your journey by exploring the best that Slovenia has to offer!
                     <li>
                       <Link href="#" className="text-[#888888] hover:text-[#ea384c] block">
                         Transportation Guide: Getting Around Slovenia
-                      </Link>
-                    </li>
-                    <li>
-                      <Link href="#" className="text-[#888888] hover:text-[#ea384c] block">
-                        Slovenia's Hidden Gems: Off the Beaten Path
                       </Link>
                     </li>
                   </ul>
