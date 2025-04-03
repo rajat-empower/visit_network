@@ -331,6 +331,8 @@ const ImportedDataDialog = () => {
   );
 };
 
+const importLimitOptions = [1, 10, 20, 30, 40, 50, 100, 200, 500, 1000];
+
 const TourImporter: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(STEPS.CATEGORY);
   const [category, setCategory] = useState<ImportCategory>('TOURS');
@@ -338,7 +340,7 @@ const TourImporter: React.FC = () => {
   const [locations, setLocations] = useState<ImportLocation[]>([]);
   const [cities, setCities] = useState<ViatorCity[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
-  const [limit, setLimit] = useState(100);
+  const [importLimit, setImportLimit] = useState<number>(10);
   const [preview, setPreview] = useState<ImportPreview[]>([]);
   const [progress, setProgress] = useState<ImportProgress>({
     total: 0,
@@ -452,7 +454,7 @@ const TourImporter: React.FC = () => {
       const response = await fetch(getApiUrl(ENDPOINTS.TOURS.VERIFY), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ locations: selectedLocations, limit: limit })
+        body: JSON.stringify({ locations: selectedLocations, limit: importLimit })
       });
       
       const data = await response.json();
@@ -518,8 +520,8 @@ const TourImporter: React.FC = () => {
         body: JSON.stringify({
           locations: locationsToFetch,
           page,
-          limit: limit,
-          pageSize: limit
+          limit: importLimit,
+          pageSize: importLimit
         })
       });
       
@@ -574,7 +576,7 @@ const TourImporter: React.FC = () => {
     try {
       setCurrentStep(STEPS.IMPORT);
       setProgress({
-        total: selectedLocations.length * limit,
+        total: selectedLocations.length * importLimit,
         current: 0,
         failed: 0,
         skipped: 0,
@@ -591,7 +593,7 @@ const TourImporter: React.FC = () => {
           category,
           source,
           selectedLocations,
-          limit,
+          limit: importLimit,
           pages: locationPages
         })
       });
@@ -1006,24 +1008,34 @@ const TourImporter: React.FC = () => {
           </div>
         );
 
-      case STEPS.LIMIT:
+      case STEPS.LIMIT: 
         return (
           <div className="space-y-4">
             <h3 className="text-lg font-medium">Set Import Limit</h3>
             <div className="flex items-center gap-2">
-              <Input
-                type="number"
-                value={limit}
-                onChange={(e) => setLimit(parseInt(e.target.value) || 100)}
-                min={1}
-                max={1000}
-              />
+              <Select
+                value={String(importLimit)}
+                onValueChange={(value) => setImportLimit(Number(value))}
+              >
+                {/* <SelectTrigger className="w-full md:w-[200px]"> */}
+                <SelectTrigger>
+                  <SelectValue placeholder="Select import limit" />
+                </SelectTrigger>
+                <SelectContent>
+                  {importLimitOptions.map((limit) => (
+                    <SelectItem key={limit} value={String(limit)}>
+                      {/* {limit} {limit === 1 ? 'product' : 'products'} */}
+                      {limit}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <span className="text-sm text-gray-500">Products per city</span>
             </div>
             <div className="flex gap-2">
               <Button 
                 variant="outline" 
-                onClick={() => handleStepChange(STEPS.VERIFY)}
+                onClick={() => handleStepChange(STEPS.LOCATIONS)}
                 disabled={isLoading}
               >
                 Back
@@ -1069,7 +1081,7 @@ const TourImporter: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-sm text-gray-500">Limit per City:</span>
-                  <p className="text-sm font-medium">{limit} tours</p>
+                  <p className="text-sm font-medium">{importLimit} products</p>
                 </div>
               </div>
             </div>

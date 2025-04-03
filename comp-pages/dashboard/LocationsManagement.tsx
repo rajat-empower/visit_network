@@ -358,19 +358,19 @@ const LocationsManagement: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6" style={{ paddingTop: '25px' }}>
+    <div className="space-y-6 p-4 md:p-6 lg:p-8">
       <Toaster position="top-right" richColors />
-      <div className="flex justify-between items-center">
-      <PageTitle 
-        title="Locations Management" 
-        description="Manage countries and cities for your network" 
-      />
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <PageTitle 
+          title="Locations Management" 
+          description="Manage countries and cities for your network" 
+        />
       </div>
 
-      <Card>
+      <Card className="w-full">
         <CardHeader>
-          <CardTitle>Manage Locations</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl md:text-2xl">Manage Locations</CardTitle>
+          <CardDescription className="text-sm md:text-base">
             Select countries and manage their cities
           </CardDescription>
         </CardHeader>
@@ -378,25 +378,27 @@ const LocationsManagement: React.FC = () => {
           {/* Country Selector */}
           <div className="space-y-4">
             <label className="text-sm font-medium">Select Countries</label>
-            <div className="border rounded-md p-2 min-h-[80px] w-[300px]">
+            <div className="border rounded-md p-2 min-h-[80px] w-full md:w-[300px]">
               <div className="flex flex-wrap gap-2">
                 {selectedCountries.map((countryId) => {
-                  // Find country using id instead of destinationId
                   const country = countries.find((c: ViatorDestination) => String(c.id) === String(countryId));
-                  console.log('Rendering country:', { countryId, found: !!country });
                   return country ? (
-                    <Badge key={countryId} variant="secondary" className="flex items-center gap-1">
-                    <button
-                        onClick={() => removeCountry(countryId)}
-                      className="text-xs hover:text-red-500"
+                    <Badge 
+                      key={countryId} 
+                      variant="secondary" 
+                      className="flex items-center gap-1 text-xs md:text-sm"
                     >
-                      <X size={14} />
-                    </button>
+                      <button
+                        onClick={() => removeCountry(countryId)}
+                        className="text-xs hover:text-red-500"
+                      >
+                        <X size={14} />
+                      </button>
                       {country.destinationName || country.name}
                       {country.iataCode && (
                         <span className="text-xs text-gray-500 ml-1">({country.iataCode})</span>
                       )}
-                  </Badge>
+                    </Badge>
                   ) : null;
                 })}
               </div>
@@ -407,7 +409,7 @@ const LocationsManagement: React.FC = () => {
                     variant="ghost"
                     role="combobox"
                     aria-expanded={open}
-                    className="w-full justify-start text-left mt-1"
+                    className="w-full justify-start text-left mt-1 text-sm md:text-base"
                   >
                     Select countries...
                   </Button>
@@ -418,6 +420,7 @@ const LocationsManagement: React.FC = () => {
                       placeholder="Search countries..." 
                       value={searchTerm}
                       onValueChange={setSearchTerm}
+                      className="text-sm md:text-base"
                     />
                     <CommandEmpty>No country found.</CommandEmpty>
                     <CommandGroup className="max-h-[300px] overflow-y-auto">
@@ -425,6 +428,7 @@ const LocationsManagement: React.FC = () => {
                         <CommandItem
                           key={country.id}
                           onSelect={() => handleCountrySelect(country)}
+                          className="text-sm md:text-base"
                         >
                           {country.name}
                         </CommandItem>
@@ -438,10 +442,9 @@ const LocationsManagement: React.FC = () => {
 
           {/* Cities List */}
           <div>
-            <h3 className="text-sm font-medium mb-4">Cities</h3>
-            <div className="border rounded-md divide-y max-h-[400px] overflow-y-auto">
+            <h3 className="text-sm md:text-base font-medium mb-4">Cities</h3>
+            <div className="border rounded-md divide-y max-h-[400px] md:max-h-[600px] overflow-y-auto">
               {cities.map((city) => {
-                // Skip cities without a parentId
                 if (!city.parentId) return null;
                 
                 const country = countries.find(c => c.destinationId === city.parentId);
@@ -451,15 +454,15 @@ const LocationsManagement: React.FC = () => {
                 return (
                   <div
                     key={cityId}
-                    className="flex items-center justify-between p-4"
+                    className="flex flex-col md:flex-row items-start md:items-center justify-between p-4 gap-4"
                   >
-                    <div className="flex items-center space-x-4">
+                    <div className="flex items-start md:items-center space-x-4 w-full md:w-auto">
                       <Checkbox
                         checked={!!parentId && selectedCities[parentId]?.includes(cityId)}
                         onCheckedChange={() => parentId && toggleCity(cityId, parentId)}
                       />
-                      <div className="flex flex-col">
-                        <span className="font-medium">{city.destinationName}</span>
+                      <div className="flex flex-col flex-grow">
+                        <span className="font-medium text-sm md:text-base">{city.destinationName}</span>
                         <span className="text-xs text-gray-500">
                           {city.iataCode && `${city.iataCode} • `}
                           {city.timeZone}
@@ -478,19 +481,19 @@ const LocationsManagement: React.FC = () => {
                           </span>
                         </div>
                       </div>
-                      <Badge variant="secondary" className="bg-black text-white hover:bg-black/80">
+                      <Badge variant="secondary" className="bg-black text-white hover:bg-black/80 text-xs md:text-sm whitespace-nowrap">
                         {city.countryName || country?.name || 'Unknown'}
                       </Badge>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-end">
                       {city.coordinates && (
-                        <span className="text-xs text-gray-500">
+                        <span className="text-xs text-gray-500 hidden md:inline">
                           {city.coordinates.latitude.toFixed(2)}, {city.coordinates.longitude.toFixed(2)}
                         </span>
                       )}
                       <Link
                         href={`/dashboard/locations/cities/${city.destinationId}`}
-                        className="flex items-center text-sm text-blue-600 hover:text-blue-800"
+                        className="flex items-center text-xs md:text-sm text-blue-600 hover:text-blue-800"
                       >
                         <Settings className="w-4 h-4 mr-1" />
                         Manage
@@ -500,12 +503,12 @@ const LocationsManagement: React.FC = () => {
                 );
               })}
               {cities.length === 0 && selectedCountries.length > 0 && (
-                <div className="p-4 text-center text-gray-500">
+                <div className="p-4 text-center text-sm md:text-base text-gray-500">
                   No cities found for the selected countries
                 </div>
               )}
               {selectedCountries.length === 0 && (
-                <div className="p-4 text-center text-gray-500">
+                <div className="p-4 text-center text-sm md:text-base text-gray-500">
                   Select countries to view their cities
                 </div>
               )}
@@ -517,6 +520,7 @@ const LocationsManagement: React.FC = () => {
             <Button 
               onClick={handleSaveMapping}
               disabled={loading || Object.keys(selectedCities).length === 0}
+              className="w-full md:w-auto text-sm md:text-base"
             >
               {loading ? 'Saving...' : 'Save Changes'}
             </Button>
