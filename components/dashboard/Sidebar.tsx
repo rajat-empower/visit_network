@@ -52,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
   const toggleExpand = (title: string) => {
     setExpandedItems((prev) => ({
       ...prev,
-      [title]: !prev[title],
+      [title]: !prev[title], 
     }));
   };
 
