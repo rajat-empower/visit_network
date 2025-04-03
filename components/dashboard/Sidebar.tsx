@@ -68,7 +68,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
         { 
           title: "Manage Locations", 
           icon: <ChevronRight className="h-4 w-4" />, 
-          path: "http://localhost:3001/dashboard/locations"
+          path: "/dashboard/locations"
         },
       ],
     },
