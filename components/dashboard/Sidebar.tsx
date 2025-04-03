@@ -63,11 +63,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       path: "/dashboard",
     },
     {
-      title: "Universal Importer",
-      icon: <ImportIcon className="h-5 w-5" />,
-      path: "/dashboard/tours/importer",
-    },
-    {
       title: "Locations",
       icon: <MapPin className="h-5 w-5" />,
       children: [
@@ -75,6 +70,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
           title: "Manage Locations", 
           icon: <ChevronRight className="h-4 w-4" />, 
           path: "/dashboard/locations"
+        },
+      ],
+    },
+    {
+      title: "Universal Importer",
+      icon: <ImportIcon className="h-5 w-5" />,
+      children: [
+        { 
+          title: "Importer", 
+          icon: <ChevronRight className="h-4 w-4" />, 
+          path: "/dashboard/tours/importer"
         },
       ],
     },
