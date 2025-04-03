@@ -19,6 +19,7 @@ import {
   Wrench,
   Menu as MenuIcon,
   MapPin,
+  ImportIcon,
 } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
@@ -60,6 +61,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen }) => {
       title: "Dashboard",
       icon: <Home className="h-5 w-5" />,
       path: "/dashboard",
+    },
+    {
+      title: "Universal Importer",
+      icon: <ImportIcon className="h-5 w-5" />,
+      path: "/dashboard/tours/importer",
     },
     {
       title: "Locations",
