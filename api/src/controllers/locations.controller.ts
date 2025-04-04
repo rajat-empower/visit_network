@@ -1,10 +1,23 @@
 import { Request, Response } from 'express';
-import { LocationsDAO, LocationMapping } from '../dao/locations.dao';
+import { LocationsDAO } from '../dao/locations.dao';
+//import { CityData } from '../dao/city.dao';
 import { CityDAO, CityData } from '../dao/city.dao';
 import { successResponse, errorResponse } from '../utils/api-response';
 import viatorAPI from '../integrations/viator';
 import { ninjaAPI } from '../integrations/ninja.api';
 import { ViatorDestination } from '../types/viator';
+import OpenAI from 'openai';
+import axios from 'axios';
+import path from 'path';
+import { supabase } from '../config/supabase';
+
+const BUNNY_STORAGE_ZONE = process.env.BUNNY_STORAGE_ZONE || 'visitslovenia';
+const BUNNY_API_KEY = process.env.BUNNY_API_KEY;
+const BUNNY_BASE_URL = `https://storage.bunnycdn.com/${BUNNY_STORAGE_ZONE}`;
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 
 export class LocationsController {
   private locationsDAO: LocationsDAO;
@@ -61,7 +74,7 @@ export class LocationsController {
   getCities = async (req: Request, res: Response) => {
     try {
       const parentId = req.query.parentId as string;
-
+      
       if (!parentId) {
         return res.status(400).json(
           errorResponse(
@@ -76,7 +89,7 @@ export class LocationsController {
 
       const citiesResponse = await viatorAPI.getCitiesByCountries(countryIds);
       console.log('Received cities from Viator:', citiesResponse.items.length);
-
+      //console.log("citiesResponse.items---", citiesResponse.items);
       // Get existing cities data from database to include population
       const existingCities = await Promise.all(
         citiesResponse.items.map(city => 
@@ -97,7 +110,8 @@ export class LocationsController {
         
         if (population === undefined) {
           console.log(`Fetching population data from Ninja API for ${city.destinationName}`);
-          population = await ninjaAPI.getCityPopulation(city.destinationName);
+          const populationData = await ninjaAPI.getCityPopulation(city.destinationName);
+          population = populationData ?? undefined;
           
           if (population !== null) {
             // Save the population data to database for future use
@@ -108,7 +122,7 @@ export class LocationsController {
               destination_name: city.destinationName
             };
             try {
-              await this.cityDAO.upsertCity(cityData);
+              await this.locationsDAO.upsertCity(cityData);
               console.log(`Saved population data for ${city.destinationName}: ${population}`);
             } catch (error) {
               console.error(`Error saving population data for ${city.destinationName}:`, error);
@@ -221,18 +235,21 @@ export class LocationsController {
           
           try {
             // Check if city already exists
-            const existingCity = await this.cityDAO.getCityByName(city.destinationName);
+            //const existingCity = await this.locationsDAO.getCityById(city.destinationId);
+            const existingCity = await this.locationsDAO.getCityByName(city.destinationName);
             
             if (existingCity) {
               console.log(`City ${city.destinationName} exists, updating destination info...`);
               try {
-                await this.cityDAO.updateCity(existingCity.id, {
-                  destination_id: city.destinationId,
-                  destination_name: city.destinationName,
-                  destination_type: city.destinationType,
-                  parent_id: city.parentId || undefined
-                });
-                console.log(`Successfully updated destination info for city: ${city.destinationName}`);
+                if (existingCity?.id) {
+                  await this.locationsDAO.updateCity(existingCity.id, {
+                    destination_id: city.destinationId,
+                    destination_name: city.destinationName,
+                    destination_type: city.destinationType,
+                    parent_id: city.parentId || undefined
+                  });
+                  console.log(`Successfully updated destination info for city: ${city.destinationName}`);
+                }
               } catch (error) {
                 console.error(`Error updating destination info for city ${city.destinationName}:`, error);
                 skippedCities.push(city.destinationName);
@@ -282,7 +299,7 @@ export class LocationsController {
           for (const cityData of citiesToSave) {
             try {
               console.log("cityData---", cityData);
-              await this.cityDAO.upsertCity(cityData);
+              await this.locationsDAO.upsertCity(cityData);
               console.log(`Successfully saved city: ${cityData.name} with population: ${cityData.population || 'N/A'}`);
             } catch (error) {
               console.error(`Error saving city ${cityData.name}:`, error);
@@ -374,4 +391,220 @@ export class LocationsController {
       );
     }
   };
+
+  private async uploadImageToBunnyCDN(imageUrl: string, folder: string = '/uploads/cities'): Promise<string> {
+    try {
+      const timestamp = Date.now();
+      const extension = '.png';
+      const fileName = `${timestamp}${extension}`;
+      const bunnyUploadUrl = `${BUNNY_BASE_URL}${folder}/${fileName}`;
+
+      // Download image from source
+      const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+      const imageBuffer = Buffer.from(imageResponse.data, 'binary');
+
+      // Upload to BunnyCDN
+      await axios.put(bunnyUploadUrl, imageBuffer, {
+        headers: {
+          'AccessKey': BUNNY_API_KEY,
+          'Content-Type': 'application/octet-stream',
+        },
+      });
+
+      return `https://${BUNNY_STORAGE_ZONE}.b-cdn.net${folder}/${fileName}`;
+    } catch (error) {
+      console.error('Error uploading image to BunnyCDN:', error);
+      throw new Error('Failed to upload image to BunnyCDN');
+    }
+  }
+
+  private async generateCityImage(cityName: string, countryName: string): Promise<string> {
+    try {
+      const prompt = `Create a landscape image of ${cityName}, ${countryName}. Show the city's iconic landmarks and natural beauty in a high-quality, professional travel photography style.`;
+      
+      const response = await openai.images.generate({
+        prompt,
+        n: 1,
+        size: "1024x1024",
+        response_format: "url",
+      });
+
+      const imageUrl = response.data[0].url;
+      if (!imageUrl) throw new Error('No image generated');
+
+      // Upload to BunnyCDN
+      const cdnUrl = await this.uploadImageToBunnyCDN(imageUrl);
+      return cdnUrl;
+    } catch (error) {
+      console.error('Error generating city image:', error);
+      throw new Error('Failed to generate city image');
+    }
+  }
+
+  getCityDetails = async (req: Request, res: Response) => {
+    try {
+      const { cityId } = req.params;
+
+      if (!cityId) {
+        return res.status(400).json(
+          errorResponse('City ID is required', 400)
+        );
+      }
+
+      const cityDetails = await this.locationsDAO.getCityById(cityId);
+      
+      if (!cityDetails) {
+        return res.status(404).json(
+          errorResponse('City not found', 404)
+        );
+      }
+
+      return res.status(200).json(
+        successResponse(
+          cityDetails,
+          'City details fetched successfully',
+          200
+        )
+      );
+    } catch (error) {
+      console.error('Error fetching city details:', error);
+      return res.status(500).json(
+        errorResponse(
+          'Failed to fetch city details',
+          500,
+          error instanceof Error ? error.message : 'Unknown error'
+        )
+      );
+    }
+  };
+
+  updateCityDetails = async (req: Request, res: Response) => {
+    try {
+      const { cityId } = req.params;
+      const updateData = req.body;
+
+      if (!cityId) {
+        return res.status(400).json(
+          errorResponse('City ID is required', 400)
+        );
+      }
+
+      // Remove any null or undefined values
+      const cleanedData = Object.fromEntries(
+        Object.entries(updateData).filter(([_, v]) => v != null && v !== '')
+      );
+
+      const existingCity = await this.locationsDAO.getCityById(cityId);
+      if (!existingCity) {
+        return res.status(404).json(
+          errorResponse('City not found', 404)
+        );
+      }
+
+      const updatedCity = await this.locationsDAO.updateCityDetails(cityId, cleanedData);
+
+      return res.status(200).json(
+        successResponse(
+          updatedCity,
+          'City details updated successfully',
+          200
+        )
+      );
+    } catch (error) {
+      console.error('Error updating city details:', error);
+      return res.status(500).json(
+        errorResponse(
+          'Failed to update city details',
+          500,
+          error instanceof Error ? error.message : 'Unknown error'
+        )
+      );
+    }
+  };
+
+  regenerateCityImage = async (req: Request, res: Response) => {
+    try {
+      const { cityId } = req.params;
+
+      if (!cityId) {
+        return res.status(400).json(
+          errorResponse('City ID is required', 400)
+        );
+      }
+
+      const city = await this.locationsDAO.getCityById(cityId);
+      if (!city) {
+        return res.status(404).json(
+          errorResponse('City not found', 404)
+        );
+      }
+
+      if (!city.name || !city.region) {
+        return res.status(400).json(
+          errorResponse('City name and region are required', 400)
+        );
+      }
+
+      // Generate new image
+      const newImageUrl = await this.generateCityImage(city.name, city.region);
+
+      // Update city with new image URL
+      const updatedCity = await this.locationsDAO.updateCityDetails(cityId, {
+        image_url: newImageUrl
+      });
+
+      return res.status(200).json(
+        successResponse(
+          updatedCity,
+          'City image regenerated successfully',
+          200
+        )
+      );
+    } catch (error) {
+      console.error('Error regenerating city image:', error);
+      return res.status(500).json(
+        errorResponse(
+          'Failed to regenerate city image',
+          500,
+          error instanceof Error ? error.message : 'Unknown error'
+        )
+      );
+    }
+  };
+
+  async getCityByName(name: string) {
+    console.log('Checking if city exists:', name);
+    const { data, error } = await supabase
+      .from('cities')
+      .select('*')
+      .eq('name', name)
+      .single();
+
+    if (error && error.code !== 'PGRST116') {
+      console.error('Error checking city existence:', error);
+      throw error;
+    }
+
+    return data;
+  }
+
+  async updateCity(id: string, updateData: Partial<CityData>) {
+    if (!id) {
+      throw new Error('City ID is required');
+    }
+
+    const { data, error } = await supabase
+      .from('cities')
+      .update(updateData)
+      .eq('id', id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating city:', error);
+      throw error;
+    }
+
+    return data;
+  }
 } 

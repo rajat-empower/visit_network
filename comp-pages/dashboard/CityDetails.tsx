@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { toast, Toaster } from "sonner";
+import { toast } from "sonner";
 import { getApiUrl, ENDPOINTS } from '@/utils/api-config';
 import PageTitle from "@/components/PageTitle";
 import { Loader2, RefreshCw } from "lucide-react";
@@ -17,15 +17,6 @@ interface CityDetails {
   description: string;
   latitude: number;
   longitude: number;
-  elevation?: number;
-  area?: number;
-  founded?: string;
-  food?: string;
-  transport?: string;
-  popularity?: string;
-  bestvisit?: string;
-  toptourist?: string;
-  annualevents?: string;
   type: string;
   region: string;
   viator_id: string;
@@ -42,9 +33,9 @@ interface CityDetails {
   image_url?: string;
 }
 
-export default function CityDetailsPage() {
+const CityDetails: React.FC = () => {
   const params = useParams();
-  const cityId = params?.id as string;
+  const cityId = params?.cityId as string;
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
@@ -55,13 +46,8 @@ export default function CityDetailsPage() {
   }, [cityId]);
 
   const fetchCityDetails = async () => {
-    const loadingToast = toast.loading('Loading city details...', {
-      description: 'Fetching latest information'
-    });
-
     try {
       setIsLoading(true);
-      
       const response = await fetch(getApiUrl(`${ENDPOINTS.LOCATIONS.CITIES}/${cityId}`));
       const data = await response.json();
 
@@ -70,9 +56,7 @@ export default function CityDetailsPage() {
       }
 
       setCityDetails(data.data);
-      toast.success('City details loaded successfully', {
-        description: `Loaded information for ${data.data.name}`
-      });
+      toast.success('City details loaded successfully');
     } catch (error) {
       console.error('Error fetching city details:', error);
       toast.error('Failed to load city details', {
@@ -80,7 +64,6 @@ export default function CityDetailsPage() {
       });
     } finally {
       setIsLoading(false);
-      toast.dismiss(loadingToast);
     }
   };
 
@@ -92,31 +75,13 @@ export default function CityDetailsPage() {
       ...cityDetails,
       [name]: value
     });
-    
-    // Only show toast for significant field changes like name or region
-    if (['name', 'region'].includes(name)) {
-      const fieldLabels: { [key: string]: string } = {
-        name: 'City Name',
-        region: 'Region/Country'
-      };
-
-      const fieldLabel = fieldLabels[name];
-      toast.info('Important field updated', {
-        description: `Updated ${fieldLabel}. Remember to save your changes.`
-      });
-    }
   };
 
   const handleSave = async () => {
     if (!cityDetails) return;
 
-    const loadingToast = toast.loading('Saving city details...', {
-      description: 'Updating database with new information'
-    });
-
     try {
       setIsSaving(true);
-
       const response = await fetch(getApiUrl(`${ENDPOINTS.LOCATIONS.CITIES}/${cityId}`), {
         method: 'PUT',
         headers: {
@@ -131,28 +96,20 @@ export default function CityDetailsPage() {
         throw new Error(data.message);
       }
 
-      toast.success('Changes saved successfully', {
-        description: `All updates for ${cityDetails.name} have been saved`
-      });
+      toast.success('City details updated successfully');
     } catch (error) {
       console.error('Error updating city details:', error);
-      toast.error('Failed to save changes', {
-        description: error instanceof Error ? error.message : 'An unexpected error occurred'
+      toast.error('Failed to update city details', {
+        description: error instanceof Error ? error.message : 'Unknown error'
       });
     } finally {
       setIsSaving(false);
-      toast.dismiss(loadingToast);
     }
   };
 
   const handleRegenerateImage = async () => {
-    const loadingToast = toast.loading('Generating new city image...', {
-      description: 'This process may take up to a minute'
-    });
-
     try {
       setIsGeneratingImage(true);
-
       const response = await fetch(getApiUrl(`${ENDPOINTS.LOCATIONS.CITIES}/${cityId}/regenerate-image`), {
         method: 'POST',
       });
@@ -164,19 +121,14 @@ export default function CityDetailsPage() {
       }
 
       setCityDetails(data.data);
-      toast.success('New image generated', {
-        description: 'The city image has been successfully updated'
-      });
+      toast.success('City image regenerated successfully');
     } catch (error) {
       console.error('Error regenerating city image:', error);
-      toast.error('Image generation failed', {
-        description: error instanceof Error 
-          ? error.message 
-          : 'Could not generate a new image at this time'
+      toast.error('Failed to regenerate city image', {
+        description: error instanceof Error ? error.message : 'Unknown error'
       });
     } finally {
       setIsGeneratingImage(false);
-      toast.dismiss(loadingToast);
     }
   };
 
@@ -198,12 +150,6 @@ export default function CityDetailsPage() {
 
   return (
     <div className="space-y-6 p-4 md:p-6 lg:p-8">
-      <Toaster 
-        position="top-right" 
-        richColors 
-        closeButton
-        expand={true}
-      />
       <PageTitle 
         title="City Details" 
         description="View and edit city information" 
@@ -286,7 +232,7 @@ export default function CityDetailsPage() {
           </div>
 
           {/* Location Information */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Latitude</label>
               <Input
@@ -305,114 +251,6 @@ export default function CityDetailsPage() {
                 onChange={handleInputChange}
               />
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Elevation (meters)</label>
-              <Input
-                type="number"
-                name="elevation"
-                value={cityDetails.elevation || ''}
-                onChange={handleInputChange}
-              />
-            </div>
-          </div>
-
-          {/* City Statistics */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Area (km²)</label>
-              <Input
-                type="number"
-                name="area"
-                value={cityDetails.area || ''}
-                onChange={handleInputChange}
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Founded Year</label>
-              <Input
-                name="founded"
-                value={cityDetails.founded || ''}
-                onChange={handleInputChange}
-                placeholder="e.g., 1200"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Population</label>
-              <Input
-                type="number"
-                name="population"
-                value={cityDetails.population || ''}
-                onChange={handleInputChange}
-              />
-            </div>
-          </div>
-
-          {/* Tourism Information */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Best Time to Visit</label>
-            <Input
-              name="bestvisit"
-              value={cityDetails.bestvisit || ''}
-              onChange={handleInputChange}
-              placeholder="e.g., June to September"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Popular Tourist Attractions</label>
-            <Textarea
-              name="toptourist"
-              value={cityDetails.toptourist || ''}
-              onChange={handleInputChange}
-              rows={3}
-              placeholder="List major tourist attractions"
-            />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Annual Events</label>
-            <Textarea
-              name="annualevents"
-              value={cityDetails.annualevents || ''}
-              onChange={handleInputChange}
-              rows={3}
-              placeholder="List major annual events and festivals"
-            />
-          </div>
-
-          {/* City Features */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Local Food & Cuisine</label>
-              <Textarea
-                name="food"
-                value={cityDetails.food || ''}
-                onChange={handleInputChange}
-                rows={3}
-                placeholder="Describe local food specialties"
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Transportation</label>
-              <Textarea
-                name="transport"
-                value={cityDetails.transport || ''}
-                onChange={handleInputChange}
-                rows={3}
-                placeholder="Describe transportation options"
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Popularity & Tourism Status</label>
-            <Textarea
-              name="popularity"
-              value={cityDetails.popularity || ''}
-              onChange={handleInputChange}
-              rows={3}
-              placeholder="Describe the city's tourism popularity and status"
-            />
           </div>
 
           {/* Additional Information */}
@@ -430,6 +268,15 @@ export default function CityDetailsPage() {
               <Input
                 name="time_zone"
                 value={cityDetails.time_zone || ''}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Population</label>
+              <Input
+                type="number"
+                name="population"
+                value={cityDetails.population || ''}
                 onChange={handleInputChange}
               />
             </div>
@@ -455,4 +302,6 @@ export default function CityDetailsPage() {
       </Card>
     </div>
   );
-} 
+};
+
+export default CityDetails; 

@@ -143,7 +143,8 @@ export class ToursController {
       }
 
       const pageSize = limit || 100; // Default to 100 if no limit provided
-  
+      console.log("locations---", locations);
+      
       try {
         // Fetch city and country details from Supabase before fetching tours
         const { data: citiesData, error } = await supabase
@@ -157,7 +158,7 @@ export class ToursController {
             errorResponse('Failed to fetch cities data', 500)
           );
         }
-  
+        
         // Map city and country info for quick lookup by destination_id
         const cityMap: Record<number, { cityName: string, countryName: string }> = {};
         citiesData?.forEach((city: any) => {

@@ -1,7 +1,7 @@
-import express from 'express';
+import { Router } from 'express';
 import { LocationsController } from '../controllers/locations.controller';
 
-const router = express.Router();
+const router = Router();
 const locationsController = new LocationsController();
 
 // Get all countries
@@ -15,5 +15,10 @@ router.post('/mapping', locationsController.updateMapping);
 
 // Get existing mappings
 router.get('/mappings', locationsController.getMappings);
+
+// New routes for city details
+router.get('/cities/:cityId', locationsController.getCityDetails);
+router.put('/cities/:cityId', locationsController.updateCityDetails);
+router.post('/cities/:cityId/regenerate-image', locationsController.regenerateCityImage);
 
 export default router; 

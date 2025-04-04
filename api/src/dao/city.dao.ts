@@ -75,20 +75,20 @@ export class CityDAO {
     return data;
   }
 
-  async getCityByName(name: string) {
-    console.log('Checking if city exists:', name);
-    const { data, error } = await supabase
-      .from('cities')
-      .select('*')
-      .eq('name', name)
-      .single();
+  async getCityByName(name: string): Promise<CityData | null> {
+    try {
+      const { data, error } = await supabase
+        .from('cities')
+        .select('*')
+        .eq('name', name)
+        .single();
 
-    if (error && error.code !== 'PGRST116') { // PGRST116 is the "no rows returned" error
-      console.error('Error checking city existence:', error);
-      throw error;
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error getting city by name:', error);
+      return null;
     }
-
-    return data;
   }
 
   async getCityByViatorId(viatorId: string): Promise<CityData | null> {
@@ -117,19 +117,45 @@ export class CityDAO {
     return data;
   }
 
-  async updateCity(id: string, updateData: Partial<CityData>) {
-    console.log('Updating city with ID:', id, 'Data:', updateData);
-    const { data, error } = await supabase
-      .from('cities')
-      .update(updateData)
-      .eq('id', id)
-      .select();
+  async getCityById(id: string): Promise<CityData | null> {
+    try {
+      const { data, error } = await supabase
+        .from('cities')
+        .select('*')
+        .eq('destination_id', id)
+        .single();
 
-    if (error) {
-      console.error('Error updating city:', error);
-      throw error;
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error getting city by ID:', error);
+      return null;
     }
+  }
 
-    return data;
+  async updateCity(id: string, updateData: Partial<CityData>): Promise<CityData | null> {
+    try {
+      // Remove undefined values from updateData
+      const cleanedData = Object.entries(updateData)
+        .reduce((acc, [key, value]) => {
+          if (value !== undefined) {
+            acc[key] = value;
+          }
+          return acc;
+        }, {} as Record<string, any>);
+
+      const { data, error } = await supabase
+        .from('cities')
+        .update(cleanedData)
+        .eq('destination_id', id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error updating city:', error);
+      return null;
+    }
   }
 } 

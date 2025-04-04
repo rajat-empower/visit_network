@@ -102,6 +102,10 @@ const LocationsManagement: React.FC = () => {
         return;
       }
 
+      const loadingToast = toast.loading('Loading cities...', {
+        description: `Fetching cities for ${selectedCountries.length} selected ${selectedCountries.length === 1 ? 'country' : 'countries'}`
+      });
+
       // Filter out any invalid/null IDs and join with commas
       const validCountryIds = selectedCountries.filter(Boolean).join(',');
       
@@ -126,9 +130,11 @@ const LocationsManagement: React.FC = () => {
       
       setCities(data.data.items);
       
-      toast.success('Cities loaded', {
-        description: `Successfully loaded ${data.data.items.length} cities for ${selectedCountries.length} country/countries`
+      toast.success('Cities loaded successfully', {
+        description: `Found ${data.data.items.length} cities in ${selectedCountries.length} ${selectedCountries.length === 1 ? 'country' : 'countries'}`
       });
+
+      toast.dismiss(loadingToast);
     } catch (error) {
       console.error('Error fetching cities:', error);
       toast.error('Failed to load cities', {
@@ -144,6 +150,10 @@ const LocationsManagement: React.FC = () => {
   }, []);
 
   const fetchExistingMappings = async () => {
+    const loadingToast = toast.loading('Loading existing mappings...', {
+      description: 'Fetching countries and their mapped cities'
+    });
+
     try {
       // First fetch all countries
       const countriesResponse = await fetch(getApiUrl(ENDPOINTS.LOCATIONS.COUNTRIES));
@@ -165,7 +175,6 @@ const LocationsManagement: React.FC = () => {
       }
 
       const { countryMappings } = mappingsData.data;
-      console.log('Received mappings:', countryMappings);
 
       if (countryMappings && Object.keys(countryMappings).length > 0) {
         // Convert numeric IDs to strings for frontend use
@@ -176,24 +185,15 @@ const LocationsManagement: React.FC = () => {
           return acc;
         }, {} as Record<string, string[]>);
 
-        console.log('Normalized mappings:', normalizedMappings);
-
         // Get valid country IDs that exist in our available countries
         const mappedCountryIds = Object.keys(normalizedMappings).filter(countryId => {
-          // Find matching country in allCountries
           const matchingCountry = allCountries.find((c: ViatorDestination) => String(c.id) === String(countryId));
-          console.log(`Checking country ${countryId}:`, { found: !!matchingCountry });
           return !!matchingCountry;
         });
 
-        console.log('Valid country IDs:', mappedCountryIds);
-
         if (mappedCountryIds.length > 0) {
-          // Set selected countries first
           setSelectedCountries(mappedCountryIds);
-          console.log('Setting selected countries:', mappedCountryIds);
 
-          // Set selected cities with normalized mappings
           const validMappings = mappedCountryIds.reduce((acc, countryId) => {
             if (normalizedMappings[countryId]) {
               acc[countryId] = normalizedMappings[countryId];
@@ -202,9 +202,7 @@ const LocationsManagement: React.FC = () => {
           }, {} as Record<string, string[]>);
 
           setSelectedCities(validMappings);
-          console.log('Setting selected cities:', validMappings);
 
-          // Fetch cities for these countries
           const validCountryIds = mappedCountryIds.join(',');
           const citiesResponse = await fetch(
             getApiUrl(`${ENDPOINTS.LOCATIONS.CITIES}?parentId=${validCountryIds}`),
@@ -219,30 +217,28 @@ const LocationsManagement: React.FC = () => {
           const citiesData = await citiesResponse.json();
           if (citiesData.status === 'success') {
             setCities(citiesData.data.items);
-            console.log('Loaded cities:', citiesData.data.items);
             
-            // Count actually mapped cities
-            const totalMappedCities = Object.values(validMappings as Record<string, string[]>)
+            const totalMappedCities = Object.values(validMappings)
               .reduce((sum: number, cityIds: string[]) => sum + cityIds.length, 0);
             
-            toast.success('Existing mappings loaded', {
-              description: `Found ${mappedCountryIds.length} countries with ${totalMappedCities} mapped cities`
+            toast.success('Mappings loaded successfully', {
+              description: `Found ${mappedCountryIds.length} ${mappedCountryIds.length === 1 ? 'country' : 'countries'} with ${totalMappedCities} mapped ${totalMappedCities === 1 ? 'city' : 'cities'}`
             });
           }
         }
       } else {
-        toast.info('No existing mappings', {
+        toast.info('No existing mappings found', {
           description: 'Select countries and cities to create new mappings'
         });
       }
-      
-      setInitialLoadDone(true);
     } catch (error) {
       console.error('Error fetching mappings:', error);
       toast.error('Failed to load mappings', {
         description: error instanceof Error ? error.message : 'Could not load existing mappings'
       });
+    } finally {
       setInitialLoadDone(true);
+      toast.dismiss(loadingToast);
     }
   };
 
@@ -254,20 +250,31 @@ const LocationsManagement: React.FC = () => {
         ...prev,
         [countryId]: prev[countryId] || []
       }));
+      toast.success('Country added', {
+        description: `Added ${country.destinationName} to selected countries`
+      });
     }
     setOpen(false);
   };
 
   const removeCountry = (countryId: string) => {
+    const country = countries.find((c: ViatorDestination) => String(c.id) === String(countryId));
     setSelectedCountries(selectedCountries.filter((id: string) => id !== countryId));
     setSelectedCities((prev: RegionCityMap) => {
       const newSelected = { ...prev };
       delete newSelected[countryId];
       return newSelected;
     });
+    if (country) {
+      toast.info('Country removed', {
+        description: `Removed ${country.destinationName} and its cities from selection`
+      });
+    }
   };
 
   const toggleCity = (cityId: string, countryId: string) => {
+    const city = cities.find(c => String(c.destinationId) === cityId);
+    
     setSelectedCities((prev: RegionCityMap) => {
       const newSelected = { ...prev };
       if (!newSelected[countryId]) {
@@ -276,14 +283,30 @@ const LocationsManagement: React.FC = () => {
       
       if (newSelected[countryId].includes(cityId)) {
         newSelected[countryId] = newSelected[countryId].filter((id: string) => id !== cityId);
+        if (city) {
+          toast.info('City removed', {
+            description: `Removed ${city.destinationName} from selection`
+          });
+        }
       } else {
         newSelected[countryId] = [...newSelected[countryId], cityId];
+        if (city) {
+          toast.success('City added', {
+            description: `Added ${city.destinationName} to selection`
+          });
+        }
       }
 
       // Only remove country from selectedCountries if no cities are selected
       if (newSelected[countryId].length === 0) {
         delete newSelected[countryId];
         setSelectedCountries((prev: string[]) => prev.filter((id: string) => id !== countryId));
+        const country = countries.find((c: ViatorDestination) => String(c.id) === String(countryId));
+        if (country) {
+          toast.info('Country removed', {
+            description: `Removed ${country.destinationName} as no cities are selected`
+          });
+        }
       }
 
       return newSelected;
@@ -297,6 +320,10 @@ const LocationsManagement: React.FC = () => {
       });
       return;
     }
+
+    const loadingToast = toast.loading('Saving mappings...', {
+      description: 'Updating country and city mappings'
+    });
 
     setLoading(true);
     try {
@@ -322,8 +349,11 @@ const LocationsManagement: React.FC = () => {
         throw new Error(data.message);
       }
       
-      toast.success('Mappings saved', {
-        description: data.message
+      const totalCountries = Object.keys(selectedCities).length;
+      const totalCities = Object.values(selectedCities).reduce((sum, cities) => sum + cities.length, 0);
+      
+      toast.success('Mappings saved successfully', {
+        description: `Updated mappings for ${totalCountries} ${totalCountries === 1 ? 'country' : 'countries'} and ${totalCities} ${totalCities === 1 ? 'city' : 'cities'}`
       });
       
       // Refresh the mappings
@@ -335,6 +365,7 @@ const LocationsManagement: React.FC = () => {
       });
     } finally {
       setLoading(false);
+      toast.dismiss(loadingToast);
     }
   };
 

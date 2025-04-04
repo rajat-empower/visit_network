@@ -803,6 +803,7 @@ const TourImporter: React.FC = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="VIATOR_API">Viator API</SelectItem>
+                <SelectItem value="AGODA_API">Agoda API</SelectItem>
               </SelectContent>
             </Select>
             <div className="flex gap-2">

@@ -13,8 +13,10 @@ export const ENDPOINTS = {
     COUNTRIES: 'locations/countries',
     REGIONS: 'locations/regions',
     CITIES: 'locations/cities',
+    MAPPINGS: 'locations/mappings',
     MAPPING: 'locations/mapping',
-    MAPPINGS: 'locations/mappings'
+    CITY_DETAILS: (cityId: string) => `locations/cities/${cityId}`,
+    REGENERATE_IMAGE: (cityId: string) => `locations/cities/${cityId}/regenerate-image`,
   },
   TOURS: {
     VERIFY: 'tours/verify',
