@@ -1,10 +1,14 @@
 // API configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
 const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || 'v1';
 
 export const getApiUrl = (endpoint: string): string => {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
-  return `${baseUrl}/${endpoint}`;
+  // Remove any leading slashes from endpoint and version
+  const cleanEndpoint = endpoint.replace(/^\/+/, '');
+  const cleanVersion = API_VERSION.replace(/^\/+/, '');
+  
+  // Ensure we have proper URL construction
+  return `${API_BASE_URL}/api/${cleanVersion}/${cleanEndpoint}`;
 };
 
 // Endpoints
