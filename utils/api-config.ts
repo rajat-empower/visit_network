@@ -1,9 +1,9 @@
 // API configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL;
 const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || 'v1';
 
 export const getApiUrl = (endpoint: string): string => {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api/v1';
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL;
   return `${baseUrl}/${endpoint}`;
 };
 
@@ -23,7 +23,7 @@ export const ENDPOINTS = {
     PREVIEW: 'tours/preview',
     IMPORT: 'tours/import',
     RESET: 'tours/reset',
-    IMPORTED_DATA: '/api/tours/imported-data',
+    IMPORTED_DATA: 'tours/imported-data',
   },
   MEDIA: {
     UPLOAD: 'tours/upload'
