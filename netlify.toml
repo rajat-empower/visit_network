@@ -4,9 +4,8 @@
   functions = "netlify/functions"
 
 [functions]
-  external_node_modules = ["express", "cors", "axios", "openai", "@supabase/supabase-js", "serverless-http"]
+  external_node_modules = ["express", "cors", "axios", "openai", "@supabase/supabase-js"]
   node_bundler = "esbuild"
-  included_files = ["api/src/**"]
 
 [[redirects]]
   from = "/api/*"
