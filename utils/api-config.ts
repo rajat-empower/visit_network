@@ -1,30 +1,25 @@
 // API configuration
-const isDevelopment = process.env.NODE_ENV === 'development';
-const API_BASE_URL = isDevelopment 
-  ? process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
-  : process.env.NEXT_PUBLIC_SITE_URL || '';
+export const API_BASE_URL = process.env.NODE_ENV === 'development' 
+  ? 'http://localhost:3001/api'
+  : 'https://visitnetworkdev.netlify.app/.netlify/functions/api';
 
-const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || 'v1';
+export const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || 'v1';
 
 export const getApiUrl = (endpoint: string): string => {
-  // Remove any leading slashes from endpoint and version
-  const cleanEndpoint = endpoint.replace(/^\/+/, '');
-  const cleanVersion = API_VERSION.replace(/^\/+/, '');
-  
-  // Ensure we have proper URL construction
-  return `${API_BASE_URL}/api/${cleanVersion}/${cleanEndpoint}`;
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint.slice(1) : endpoint;
+  return `${API_BASE_URL}/${API_VERSION}/${cleanEndpoint}`;
 };
 
 // Endpoints
 export const ENDPOINTS = {
   LOCATIONS: {
-    COUNTRIES: 'locations/countries',
+    COUNTRIES: '/locations/countries',
     REGIONS: 'locations/regions',
-    CITIES: 'locations/cities',
-    MAPPINGS: 'locations/mappings',
-    MAPPING: 'locations/mapping',
-    CITY_DETAILS: (cityId: string) => `locations/cities/${cityId}`,
-    REGENERATE_IMAGE: (cityId: string) => `locations/cities/${cityId}/regenerate-image`,
+    CITIES: '/locations/cities',
+    MAPPINGS: '/locations/mappings',
+    MAPPING: '/locations/mapping',
+    CITY_DETAILS: (cityId: string) => `/locations/cities/${cityId}`,
+    REGENERATE_IMAGE: (cityId: string) => `/locations/cities/${cityId}/regenerate-image`,
   },
   TOURS: {
     VERIFY: 'tours/verify',
