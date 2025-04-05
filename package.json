@@ -68,6 +68,7 @@
     "react-resizable-panels": "^2.1.7",
     "react-textarea-autosize": "^8.5.7",
     "recharts": "^2.15.1",
+    "serverless-http": "^3.2.0",
     "shadcn-ui": "^0.9.5",
     "sonner": "^2.0.1",
     "tailwind-merge": "^3.0.2",

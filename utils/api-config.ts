@@ -1,5 +1,9 @@
 // API configuration
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001';
+const isDevelopment = process.env.NODE_ENV === 'development';
+const API_BASE_URL = isDevelopment 
+  ? process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:3001'
+  : process.env.NEXT_PUBLIC_SITE_URL || '';
+
 const API_VERSION = process.env.NEXT_PUBLIC_API_VERSION || 'v1';
 
 export const getApiUrl = (endpoint: string): string => {
