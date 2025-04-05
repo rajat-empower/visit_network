@@ -1,4 +1,5 @@
-import express from 'express';
+import express, { Router } from 'express';
+
 import serverless from 'serverless-http';
 import cors from 'cors';
 import locationsRoutes from '../../api/src/routes/locations';
@@ -7,6 +8,7 @@ import toursRoutes from '../../api/src/routes/tours.routes';
 
 // Initialize express
 const app = express();
+const router = Router();
 
 // Middleware
 app.use(cors());
