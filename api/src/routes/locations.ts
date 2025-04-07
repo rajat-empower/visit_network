@@ -22,6 +22,3 @@ router.put('/cities/:cityId', locationsController.updateCityDetails);
 router.post('/cities/:cityId/regenerate-image', locationsController.regenerateCityImage);
 
 export default router; 
-
-
-

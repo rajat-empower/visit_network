@@ -3,7 +3,21 @@
   publish = ".next"
   functions = "netlify/functions"
 
+[functions]
+  external_node_modules = ["express", "cors", "axios", "openai", "@supabase/supabase-js"]
+  node_bundler = "esbuild"
+  included_files = ["api/src/**/*"]
+
 [[redirects]]
   from = "/api/*"
-  to = "/.netlify/functions/:splat"
+  to = "/.netlify/functions/api/:splat"
   status = 200
+
+[[plugins]]
+  package = "@netlify/plugin-nextjs"
+
+[build.environment]
+  NEXT_PUBLIC_API_VERSION = "v1"
+
+
+  
