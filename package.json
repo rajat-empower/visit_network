@@ -92,6 +92,7 @@
     "@types/react-dom": "latest",
     "@types/tailwindcss": "^3.1.0",
     "autoprefixer": "^10.x.x",
+    "esbuild": "^0.25.2",
     "eslint": "^9.23.0",
     "postcss": "^8.x.x",
     "tailwindcss": "^3.x.x",
