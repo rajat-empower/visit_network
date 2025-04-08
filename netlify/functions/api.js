@@ -11,9 +11,10 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use('/api/v1/locations', locationsRoutes);
-app.use('/api/v1/cities', citiesRoutes);
-app.use('/api/v1/tours', toursRoutes);
+app.use('/v1/locations', locationsRoutes);
+app.use('/v1/cities', citiesRoutes);
+app.use('/v1/tours', toursRoutes);
+
 
 app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'API is running' });
