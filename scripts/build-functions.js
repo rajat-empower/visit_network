@@ -1,7 +1,7 @@
 // scripts/build-functions.js
-const esbuild = require('esbuild');
+import { build } from 'esbuild';
 
-esbuild.build({
+build({
   entryPoints: ['./functions-src/api.ts'],
   bundle: true,
   platform: 'node',
