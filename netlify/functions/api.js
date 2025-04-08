@@ -2,9 +2,9 @@ const express = require('express');
 const serverless = require('serverless-http');
 const cors = require('cors');
 
-const locationsRoutes = require('../../api/src/routes/locations.js');
-const citiesRoutes = require('../../api/src/routes/cities.routes.js');
-const toursRoutes = require('../../api/src/routes/tours.routes.js');
+const locationsRoutes = require('../../api/src/routes/locations.ts');
+const citiesRoutes = require('../../api/src/routes/cities.routes.ts');
+const toursRoutes = require('../../api/src/routes/tours.routes.ts');
 
 const app = express();
 app.use(cors());
