@@ -1,10 +1,12 @@
 {
+  "type": "module",
   "name": "my-app2",
   "version": "0.1.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:functions": "node scripts/build-functions.js",
     "start": "next start",
     "lint": "next lint"
   },
@@ -96,6 +98,6 @@
     "eslint": "^9.23.0",
     "postcss": "^8.x.x",
     "tailwindcss": "^3.x.x",
-    "typescript": "latest"
+    "typescript": "^5.8.3"
   }
 }
